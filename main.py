@@ -35,8 +35,14 @@ frame = ttk.Frame(content, width=100, height=30)
 
 # Маркировка турбины
 Marker = ttk.Label(content, text="Маркировка турбины")
-Marker1_count = ttk.Entry(content, width=10)
-Marker2_count = ttk.Entry(content, width=10)
+Marker1_count = ttk.Combobox(content,
+    state="readonly",
+    values=["К-300-23,5", "Т-100-130"], width=8
+)
+Marker2_count = ttk.Combobox(content,
+    state="readonly",
+    values=["ЛМЗ, ЦВД", "УТЗ, ЦВД"], width=8
+)
 
 # Мощность
 N = ttk.Label(content, text="N")
