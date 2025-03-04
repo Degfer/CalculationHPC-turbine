@@ -11,7 +11,7 @@ import CalPPT
 import SaveExel
 
 # Сохранение данных в БД - exel
-def Save_tab1_DB():
+def Save_tab1_DB(content):
     SaveExel.Save_tab1('B3', str(Marker1_count.get()))
     SaveExel.Save_tab1('C3', str(Marker2_count.get()))
     SaveExel.Save_tab1('D3', float(N_count.get()))
@@ -21,9 +21,8 @@ def Save_tab1_DB():
     SaveExel.Save_tab1('I3', float(n_count.get()))
     SaveExel.Save_tab1('J3', float(H0rs_count.get()))
     SaveExel.Save_tab1('K3', float(G0_count.get()))
-    CalPPT.start()
+    CalPPT.start(content)
     print("End")
-
 
 # Иницилизация приложения
 root = Tk()
@@ -74,7 +73,7 @@ n = ttk.Label(content, text="n, с^-1")
 n_count = ttk.Entry(content, width=10)
 
 # Кнопка
-btn = ttk.Button(content, text="Расчет", command=Save_tab1_DB)
+btn = ttk.Button(content, text="Расчет", command= lambda: Save_tab1_DB(content))
 
 #Параметры окна
 content.grid(column=0, row=0)

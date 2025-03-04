@@ -2,6 +2,9 @@
 import openpyxl
 from iapws import IAPWS97
 
+from tkinter import *
+from tkinter import ttk
+
 # Determining the initial parameters - (Индекс 0 и Индекс kt'')
 def DIP(p0, t0, pk):
     steam0 = IAPWS97(P=p0, T=t0+273)
@@ -44,7 +47,7 @@ def SP_CV(p_streak, h0):
     v_conval = steam_conval.v
     return t_conval, h_conval, s_conval, v_conval
 
-def start():
+def start(content):
     book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
 
@@ -70,6 +73,8 @@ def start():
     sheet['D9'] = h0
     sheet['E9'] = s0
     sheet['F9'] = v0
+    DIPtext = ttk.Label(content, text='1.1 Нахождение начальных парметров ' + '\n' + 'h0=' + ' ' + str(h0) + '\n' + ' s0=' + ' ' + str(s0) + '\n' + ' v0=' + ' ' + str(v0))
+    DIPtext.grid(column=0, row=5, padx=5, rowspan=2, columnspan=3)
 
     print('1.2 Нахождение конечных парметров:', 'hk=', hk, 'tk=', tk-273, 'vk=', vk)
     sheet['C14'] = tk-273
