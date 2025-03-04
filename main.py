@@ -22,6 +22,7 @@ def Save_tab1_DB():
     SaveExel.Save_tab1('J3', float(H0rs_count.get()))
     SaveExel.Save_tab1('K3', float(G0_count.get()))
     CalPPT.start()
+    print("End")
 
 
 # Иницилизация приложения
