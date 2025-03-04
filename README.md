@@ -12,7 +12,7 @@ Properties of water and steam - iapws (IAPWS97)
 
 # Name of the modules
 
-#### CalPPT - Сalculation of process parameters in a turbine
+## CalPPT - Сalculation of process parameters in a turbine
 
 Сalculation function for module:
 
@@ -23,4 +23,4 @@ Properties of water and steam - iapws (IAPWS97)
 - APL_SIO -> Assessment of pressure losses in the steam inlet organs
 - SP_CV -> Steam parameters after control valves - (Индекс 0 (штрих))
 
-#### SaveExel - Saving data to main.py in exel (DB)
+## SaveExel - Saving data to main.py in exel (DB)
