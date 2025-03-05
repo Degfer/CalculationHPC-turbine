@@ -47,7 +47,7 @@ def SP_CV(p_streak, h0):
     v_conval = steam_conval.v
     return t_conval, h_conval, s_conval, v_conval
 
-def start(content):
+def start(content, root):
     book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
 
@@ -69,46 +69,84 @@ def start(content):
     # DIP - Determining the initial parameters
     h0, s0, v0, hk, tk, vk = DIP(p0, t0, pk)
 
+    line1 = ttk.Separator(content, orient=HORIZONTAL).grid(column=0, row=3, rowspan=2, columnspan=15, sticky='EW')
+
     print('1.1 Нахождение начальных парметров:', 'h0=', h0, 's0=', s0, 'v0=', v0)
     sheet['D9'] = h0
     sheet['E9'] = s0
     sheet['F9'] = v0
-    DIPtext = ttk.Label(content, text='1.1 Нахождение начальных парметров ' + '\n' + 'h0=' + ' ' + str(h0) + '\n' + ' s0=' + ' ' + str(s0) + '\n' + ' v0=' + ' ' + str(v0))
-    DIPtext.grid(column=0, row=5, padx=5, rowspan=2, columnspan=3)
+    DIPtext0 = ttk.Label(content, 
+    text='1.1 Нахождение начальных парметров '+ '\n' 
+    + 'h0=' + ' ' + str(h0) + '\n' 
+    + ' s0=' + ' ' + str(s0) + '\n' 
+    + ' v0=' + ' ' + str(v0))
+    DIPtext0.grid(column=0, row=5, padx=5, rowspan=2, columnspan=3, sticky='EW')
 
     print('1.2 Нахождение конечных парметров:', 'hk=', hk, 'tk=', tk-273, 'vk=', vk)
     sheet['C14'] = tk-273
     sheet['D14'] = hk
     sheet['F14'] = vk
+    DIPtextk = ttk.Label(content, 
+    text='1.2 Нахождение конечных парметров: ' + '\n' 
+    + 'hk=' + ' ' + str(hk) + '\n' 
+    + ' tk=' + ' ' + str(tk-273) + '\n'
+    + ' vk=' + ' ' + str(vk))
+    DIPtextk.grid(column=0, row=8, padx=5, rowspan=2, columnspan=3, sticky='EW')
+
+    line2 = ttk.Separator(content, orient=HORIZONTAL).grid(column=0, row=11, columnspan=15, sticky='EW')
 
     # DHT - Disposable heat transfer
     H0 = DHT(h0, hk)
 
     print('1.3 Располагаемый теплоперепад:', 'H0=', H0)
     sheet['C18'] = H0
+    DHTtext = ttk.Label(content, 
+    text=
+    '1.3 Располагаемый теплоперепад: '+ '\n' + 
+    'H0=' + ' ' + str(H0))
+    DHTtext.grid(column=0, row=14, padx=5, rowspan=5, columnspan=3, sticky='EW')
+
+    line3 = ttk.Separator(content, orient=HORIZONTAL).grid(column=0, row=19, columnspan=15, sticky='EW')
 
     # If calculation N or G0
-    if N != 0:
+    if N != 0 and G0 == 0:
         # NFR - Nominal flow rate
         G0 = NFR(H0, N, ηoi_ηm_ηg)
 
         print('1.4 Номинальная расход:', 'G0=', G0)
-        sheet['C22'] = G0
+        sheet['C22'] = G0  
+        FPaCTexts = ttk.Label(content, text=
+        '1.4 Номинальная расход: '+ '\n' + 
+        'G0=' + ' ' + str(G0))
+        FPaCTexts.grid(column=0, row=21, padx=5, rowspan=5, columnspan=3, sticky='EW')
 
-    elif G0 != 0:
+    elif G0 != 0 and N == 0: 
         # EPC - Electrical power calculation
         N = EPC(H0, G0, ηoi_ηm_ηg)
 
         print('1.4 Находим электрическую мощносчть:', 'Nэ=', N)
         sheet['H24'] = N
+        FPaCTexts = ttk.Label(content, text=
+        '1.4 Находим электрическую мощносчть: '+ '\n' + 
+        'Nэ=' + ' ' + str(N))
+        FPaCTexts.grid(column=0, row=21, padx=5, rowspan=5, columnspan=3, sticky='EW')
 
-    else: print("Error for N or G0")
+    else: 
+        return print("Error for N or G0")
+
+    line4 = ttk.Separator(content, orient=HORIZONTAL).grid(column=0, row=26, columnspan=15, sticky='EW')
 
     # APL_SIO - Assessment of pressure losses in the steam inlet organs
     p_streak = APL_SIO(p0, del_p_div_p0)
 
     print('2. Оценка потерь давления в паровпускных органах:', 'p0`=', p_streak)
     sheet['F27'] = p_streak
+    APLSIOText = ttk.Label(content, text=
+    '2. Оценка потерь давления в паровпускных органах: '+ '\n' + 
+    'p0`= ' + ' ' + str(p_streak))
+    APLSIOText.grid(column=0, row=27, padx=5, rowspan=5, columnspan=3, sticky='EW')
+
+    line5 = ttk.Separator(content, orient=HORIZONTAL).grid(column=0, row=32, columnspan=15, sticky='EW')
 
     # SP_CV - Steam parameters after control valves
     t_conval, h_conval, s_conval, v_conval = SP_CV(p_streak, h0)
@@ -118,6 +156,15 @@ def start(content):
     sheet['D32'] = h_conval
     sheet['E32'] = s_conval
     sheet['F32'] = v_conval
+    SPCVtext = ttk.Label(content, 
+    text=
+    '3. Параметры пара после регулирующих клапанов: ' + '\n' + 
+    'p0`=' + ' ' + str(p_streak) + '\n' + 
+    't0`=' + ' ' + str(t_conval-273) + '\n' + 
+    'h0`=' + ' ' + str(h_conval) + '\n' +
+    's0`=' + ' ' + str(s_conval) + '\n' +
+    'v0`=' + ' ' + str(v_conval))
+    SPCVtext.grid(column=0, row=35, padx=5, rowspan=2, columnspan=3, sticky='EW')
 
     book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     book.close()
