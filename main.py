@@ -21,13 +21,14 @@ def Save_tab1_DB(content, root):
     SaveExel.Save_tab1('I3', float(n_count.get()))
     SaveExel.Save_tab1('J3', float(H0rs_count.get()))
     SaveExel.Save_tab1('K3', float(G0_count.get()))
+    SaveExel.Save_tab1('H3', float(d_rs_count.get()))
     CalPPT.start(content, root)
     print("End")
 
 # Иницилизация приложения
 root = Tk()
 root.title("Расчет ЦВД паравой турбины")
-root.geometry("820x480")
+root.geometry("900x480")
 
 # Значение парметров таблицы
 content = ttk.Frame(root)
@@ -45,7 +46,7 @@ Marker2_count = ttk.Combobox(content,
 )
 
 # Мощность
-N = ttk.Label(content, text="N")
+N = ttk.Label(content, text="N, мВт")
 N_count = ttk.Entry(content, width=10)
 
 # Расход
@@ -71,6 +72,10 @@ H0rs_count = ttk.Entry(content, width=10)
 # Частота
 n = ttk.Label(content, text="n, с^-1")
 n_count = ttk.Entry(content, width=10)
+
+# Диаметр регулирующей ступени
+d_rs = ttk.Label(content, text="dрс, м")
+d_rs_count = ttk.Entry(content, width=10)
 
 # Кнопка
 btn = ttk.Button(content, text="Расчет", command= lambda: Save_tab1_DB(content, root))
@@ -105,6 +110,9 @@ H0rs_count.grid(column=7, row=1, padx=10)
 n.grid(column=8, row=0, padx=10)
 n_count.grid(column=8, row=1, padx=10)
 
-btn.grid(column=8, row=2, pady=20)
+d_rs.grid(column=9, row=0, padx=10)
+d_rs_count.grid(column=9, row=1, padx=10)
+
+btn.grid(column=9, row=2, pady=20)
 
 root.mainloop()

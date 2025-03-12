@@ -1,4 +1,5 @@
 # module CalPPT
+import math
 import openpyxl
 from iapws import IAPWS97
 
@@ -47,6 +48,21 @@ def SP_CV(p_streak, h0):
     v_conval = steam_conval.v
     return t_conval, h_conval, s_conval, v_conval
 
+# Heat transfer of the regulating stage
+def HTofRS(d_rs, n, u_div_cfi):
+    H0_rs = (d_rs*float(math.pi)*n/float(u_div_cfi))**2/2000
+    return H0_rs
+
+# Steam parameters after the control stage (excluding losses) - (Индекс 2рсt)
+def SM_CS_ExLos(H0_rs, h_conval, s_conval):
+    h2rst = h_conval - H0_rs
+    steam_conval = IAPWS97(h=h2rst, s=s_conval)
+    s2rst = s_conval
+    p2rst = steam_conval.P
+    t2rst = steam_conval.T
+    v2rst = steam_conval.v
+    return h2rst, s2rst, v2rst, p2rst, t2rst
+
 def start(content, root):
     book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
@@ -54,6 +70,7 @@ def start(content, root):
     # Configuration parameters
     ηoi_ηm_ηg = sheet['H21'].value
     del_p_div_p0 = sheet['C27'].value
+    u_div_cfi = sheet['E37'].value
 
     # Input parameters
     p0 = sheet['E3'].value
@@ -64,7 +81,8 @@ def start(content, root):
     G0 = sheet['K3'].value
 
     n = sheet['I3'].value
-    Ho_rs = sheet['J3'].value
+    H0_rs = sheet['J3'].value
+    d_rs = sheet['H3'].value
 
     # DIP - Determining the initial parameters
     h0, s0, v0, hk, tk, vk = DIP(p0, t0, pk)
@@ -166,9 +184,37 @@ def start(content, root):
     'v0`=' + ' ' + str(v_conval))
     SPCVtext.grid(column=0, row=35, padx=5, rowspan=2, columnspan=3, sticky='EW')
 
+    # If calculation H0_rs
+    if H0_rs == 0 and d_rs != 0:
+        #We find H0_rs by d_rs and n and u_div_cfi
+
+        #HTofRS - Heat transfer of the regulating stage
+        H0_rs = HTofRS(d_rs, n, u_div_cfi)
+
+        print('4.1.1 Находим теплоперепад в рег. ступени', 'H0рс =', H0_rs)
+        sheet['E38'] = H0_rs
+
+    elif H0_rs != 0 and d_rs == 0: 
+        #The heat transfer H0_rs is initially set
+        print('4.1.1 Находим теплоперепад в рег. ступени', 'H0рс =', H0_rs)
+        sheet['E38'] = H0_rs
+
+    else: 
+        return print("Error for H0_rs or d_rs")
+
+    
+    #SM_CS_ExLos - Steam parameters after the control stage (excluding losses)
+    h2rst, s2rst, v2rst, p2rst, t2rst = SM_CS_ExLos(H0_rs, h_conval, s_conval)
+
+    print('4.1 Параметры пара после регулирующей ступени (без учета потерь)', 'p2рсt=', p2rst, 't2рсt=', t2rst-273, 'h2рсt=', h2rst, 's2рсt=', s2rst, 'v2рсt=', v2rst)
+    sheet['B42'] = p2rst
+    sheet['C42'] = t2rst-273
+    sheet['D42'] = h2rst
+    sheet['E42'] = s2rst
+    sheet['F42'] = v2rst
+
     book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     book.close()
-
 
 if __name__ == "__main__":
     print("This is the module - Сalculation of process parameters in a turbine")
