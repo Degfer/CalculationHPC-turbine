@@ -63,6 +63,41 @@ def SM_CS_ExLos(H0_rs, h_conval, s_conval):
     v2rst = steam_conval.v
     return h2rst, s2rst, v2rst, p2rst, t2rst
 
+# Cost-effectiveness of the control stage
+def COS_OF_CS(k_x_i, G0, v0):
+    η0i_rs = k_x_i*(0.8-0.15/(G0*v0))                                               
+    return η0i_rs
+
+# Available thermal differential of the control stage
+def ATD_CS(H0_rs, η0i_rs):
+    Hi_rs = H0_rs*η0i_rs
+    return Hi_rs
+
+# Parameters after the control stage (taking into account losses) - (Индекс 2рс)
+def PA_CS_TIAL(Hi_rs, h0, p2rst):
+    p2rs = p2rst
+    h2rs = h0 - Hi_rs
+    steam_conval = IAPWS97(P=p2rs, h=h2rs)
+    t2rs = steam_conval.T
+    s2rs = steam_conval.s
+    v2rs = steam_conval.v
+    return h2rs, s2rs, v2rs, p2rs, t2rs
+
+# Steam parameters at the output of an unregulated group of stages (excluding losses) - (Индекс kt)
+def SP_UNG_ExL(pk, s2rs):
+    p_kt = pk
+    s_kt = s2rs
+    steam_conval = IAPWS97(P=p_kt, s=s_kt)
+    t_kt = steam_conval.T
+    h_kt = steam_conval.h
+    v_kt = steam_conval.v
+    return h_kt, s_kt, v_kt, p_kt, t_kt
+
+# Disposable heat transfer of a group of non-regulating steps
+def DHT_GNoNREG(h2rs, h_kt):
+    H0x = h2rs - h_kt
+    return H0x
+
 def start(content, root):
     book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
@@ -71,6 +106,8 @@ def start(content, root):
     ηoi_ηm_ηg = sheet['H21'].value
     del_p_div_p0 = sheet['C27'].value
     u_div_cfi = sheet['E37'].value
+    k_x_i = sheet['D45'].value
+    k_vl = sheet['F68'].value
 
     # Input parameters
     p0 = sheet['E3'].value
@@ -133,6 +170,7 @@ def start(content, root):
 
         print('1.4 Номинальная расход:', 'G0=', G0)
         sheet['C22'] = G0  
+        sheet['H24'] = N
         FPaCTexts = ttk.Label(content, text=
         '1.4 Номинальная расход: '+ '\n' + 
         'G0=' + ' ' + str(G0))
@@ -144,6 +182,7 @@ def start(content, root):
 
         print('1.4 Находим электрическую мощносчть:', 'Nэ=', N)
         sheet['H24'] = N
+        sheet['C22'] = G0  
         FPaCTexts = ttk.Label(content, text=
         '1.4 Находим электрическую мощносчть: '+ '\n' + 
         'Nэ=' + ' ' + str(N))
@@ -203,7 +242,7 @@ def start(content, root):
         return print("Error for H0_rs or d_rs")
 
     
-    #SM_CS_ExLos - Steam parameters after the control stage (excluding losses)
+    # SM_CS_ExLos - Steam parameters after the control stage (excluding losses)
     h2rst, s2rst, v2rst, p2rst, t2rst = SM_CS_ExLos(H0_rs, h_conval, s_conval)
 
     print('4.1 Параметры пара после регулирующей ступени (без учета потерь)', 'p2рсt=', p2rst, 't2рсt=', t2rst-273, 'h2рсt=', h2rst, 's2рсt=', s2rst, 'v2рсt=', v2rst)
@@ -212,6 +251,44 @@ def start(content, root):
     sheet['D42'] = h2rst
     sheet['E42'] = s2rst
     sheet['F42'] = v2rst
+
+    # COS_OF_CS - Cost-effectiveness of the control stage
+    η0i_rs = COS_OF_CS(k_x_i, G0, v0)
+
+    print('4.2 Экономичность регулирующей ступени', 'η0iр.c. =', η0i_rs)
+    sheet['D46'] = η0i_rs
+
+    # ATD_CS - Available thermal differential of the control stage
+    Hi_rs = ATD_CS(H0_rs, η0i_rs)
+
+    print('4.3 Располагаемый тепловой перепад регулирующей ступени', 'Hipc =', Hi_rs)
+    sheet['C50'] = Hi_rs
+
+    # PA_CS_TIAL - Parameters after the control stage (taking into account losses)
+    h2rs, s2rs, v2rs, p2rs, t2rs = PA_CS_TIAL(Hi_rs, h0, p2rst)
+
+    print('4.4 Параметры после регулирующей ступени (с учетом потерь)', 'p2рс=', p2rs, 't2рс=', t2rs-273, 'h2рс=', h2rs, 's2рс=', s2rs, 'v2рс=', v2rs)
+    sheet['B55'] = p2rs
+    sheet['C55'] = t2rs-273
+    sheet['D55'] = h2rs
+    sheet['E55'] = s2rs
+    sheet['F55'] = v2rs
+
+    # SP_UNG_ExL - Steam parameters at the output of an unregulated group of stages (excluding losses)
+    h_kt, s_kt, v_kt, p_kt, t_kt = SP_UNG_ExL(pk, s2rs)
+
+    print('5. Параметры пара на выходе из нерегулируещей группы ступеней (без учета потерь)', 'p_kt=', p_kt, 't_kt=', t_kt-273, 'h_kt=', h_kt, 's_kt=', s_kt, 'v_kt=', v_kt)
+    sheet['B60'] = p_kt
+    sheet['C60'] = t_kt-273
+    sheet['D60'] = h_kt
+    sheet['E60'] = s_kt
+    sheet['F60'] = v_kt
+
+    # DHT_GNoNREG - Disposable heat transfer of a group of non-regulating steps
+    H0x = DHT_GNoNREG(h2rs, h_kt)
+
+    print('5.1 Располагаемый теплоперепад группы нерегулирующих ступеней', 'H0х =', H0x)
+    sheet['C64'] = H0x
 
     book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     book.close()
