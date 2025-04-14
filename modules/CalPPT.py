@@ -98,6 +98,44 @@ def DHT_GNoNREG(h2rs, h_kt):
     H0x = h2rs - h_kt
     return H0x
 
+# Cost-effectiveness of a group of unregulated steps
+def CosEff_GR_UnnReg(G0, v2rs, v_kt, H0x, k_vl):
+    Gsr = G0
+    v_sr = math.sqrt(v2rs*v_kt)
+    η0i_gr = (0.92-0.2/(Gsr*v_sr))*(1+(H0x-700)/20000)*k_vl
+    return Gsr, v_sr, η0i_gr
+
+# Disposable thermal difference of a non-controllable group of steps
+def DT_Diff_NonContrl_GS(H0x, η0i_gr):
+    Hix = H0x*η0i_gr
+    return Hix
+
+# Steam parameters at the output of an unregulated group of stages (taking into account losses) - (Индекс k)
+def SP_Out_UnReg_TIAL(pk, Hix, h2rs, h0):
+    p_k = pk
+    h_k = h2rs - Hix
+    steam_conval = IAPWS97(P=p_k, h=h_k)
+    t_k = steam_conval.T
+    s_k = steam_conval.s
+    v_k = steam_conval.v
+    h_indk_diff = h0 - h_k
+    return h_k, s_k, v_k, p_k, t_k, h_indk_diff
+
+# EFFICIENCY of the flow part of the turbine
+def EFFICIE_FlPaT(h_k, h_conval, H0):
+    η0iCVD = (h_conval-h_k)/H0
+    return η0iCVD
+
+# Rec_NomFR -  Recalculating the nominal flow rate
+def Rec_NomFR(h_indk_diff, η0iCVD, ηm, ηg, N, data_N):
+    if data_N == True:
+        G0_RetCal = N*1000/(η0iCVD*h_indk_diff*ηm*ηg)
+    elif data_N == False:
+        G0_RetCal = N/(η0iCVD*h_indk_diff*ηm*ηg)
+    else:
+        return print("Error for N")
+    return G0_RetCal
+
 def start(content, root):
     book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
@@ -108,6 +146,8 @@ def start(content, root):
     u_div_cfi = sheet['E37'].value
     k_x_i = sheet['D45'].value
     k_vl = sheet['F68'].value
+    ηm = sheet['C86'].value
+    ηg = sheet['C87'].value
 
     # Input parameters
     p0 = sheet['E3'].value
@@ -163,6 +203,9 @@ def start(content, root):
 
     line3 = ttk.Separator(content, orient=HORIZONTAL).grid(column=0, row=19, columnspan=15, sticky='EW')
 
+    # Checking whether the capacity is initially set for recalculation
+    data_N = True
+
     # If calculation N or G0
     if N != 0 and G0 == 0:
         # NFR - Nominal flow rate
@@ -179,6 +222,8 @@ def start(content, root):
     elif G0 != 0 and N == 0: 
         # EPC - Electrical power calculation
         N = EPC(H0, G0, ηoi_ηm_ηg)
+
+        data_N = False
 
         print('1.4 Находим электрическую мощносчть:', 'Nэ=', N)
         sheet['H24'] = N
@@ -290,6 +335,44 @@ def start(content, root):
     print('5.1 Располагаемый теплоперепад группы нерегулирующих ступеней', 'H0х =', H0x)
     sheet['C64'] = H0x
 
+    # CosEff_GR_UnnReg - Cost-effectiveness of a group of unregulated steps
+    Gsr, v_sr, η0i_gr = CosEff_GR_UnnReg(G0, v2rs, v_kt, H0x, k_vl)
+
+    print('5.2 Экономичность группы нерегулируещих ступеней', 'Gср=G0=', Gsr, 'vср=', v_sr, 'η0iгр=', η0i_gr)
+    sheet['C68'] = Gsr
+    sheet['C69'] = v_sr
+    sheet['C70'] = η0i_gr
+
+    # DT_Diff_NonContrl_GS - Disposable thermal difference of a non-controllable group of steps
+    Hix = DT_Diff_NonContrl_GS(H0x, η0i_gr)
+
+    print('5.3 Располагаемый тепловой перепад неругулируещей группы ступеней', 'Hix=', Hix)
+    sheet['C74'] = Hix
+
+    # SP_Out_UnReg_TIAL - Steam parameters at the output of an unregulated group of stages (taking into account losses)
+    h_k, s_k, v_k, p_k, t_k, h_indk_diff = SP_Out_UnReg_TIAL(pk, Hix, h2rs, h0)
+
+    print('5.4 Параметры пара на выходе из нерегулируещей группы ступеней (с учетом потерь)', 'p_k=', p_k, 't_k=', t_k-273, 'h_k=', h_k, 's_k=', s_k, 'v_k=', v_k, 'h_indk_diff=', h_indk_diff)
+    sheet['B79'] = p_k
+    sheet['C79'] = t_k-273
+    sheet['D79'] = h_k
+    sheet['E79'] = s_k
+    sheet['F79'] = v_k
+    sheet['D80'] = h_indk_diff
+
+    # EFFICIE_FlPaT - EFFICIENCY of the flow part of the turbine
+    η0iCVD = EFFICIE_FlPaT(h_k, h_conval, H0)
+
+    print('6. КПД проточной части турбины', 'η0iЦВД=', η0iCVD)
+    sheet['C83'] = η0iCVD
+
+    # Rec_NomFR -  Recalculating the nominal flow rate
+    G0_RetCal = Rec_NomFR(h_indk_diff, η0iCVD, ηm, ηg, N, data_N)
+
+    print('8. Пересчитываем номинальный расход', 'G0=', G0_RetCal)
+    sheet['C91'] = G0_RetCal
+
+    # Save exel file (DB)
     book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
     book.close()
 
