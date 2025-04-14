@@ -20,16 +20,14 @@ Properties of water and steam - iapws (IAPWS97)
 - DHT -> Disposable heat transfer
 
 _If calculation N or G0_
-_If (N != 0 and G0 == 0)_ <br> - NFR -> Nominal flow rate
 
+_If (N != 0 and G0 == 0)_ <br> - NFR -> Nominal flow rate
 _If (G0 != 0 and N == 0)_ <br> - EPC -> Electrical power calculation
 
 - APL_SIO -> Assessment of pressure losses in the steam inlet organs
 - SP_CV -> Steam parameters after control valves - (Индекс 0 (штрих))
 
-_If calculation H0_rs ( H0_rs==0 and d_rs != 0)_
-
-- HTofRS -> Heat transfer of the regulating stage
+_If calculation H0_rs ( H0_rs==0 and d_rs != 0)_ <br> - HTofRS -> Heat transfer of the regulating stage
 
 - SM_CS_ExLos -> Steam parameters after the control stage (excluding losses) - (Индекс 2рсt)
 - COS_OF_CS -> Cost-effectiveness of the control stage
