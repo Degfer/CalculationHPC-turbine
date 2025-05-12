@@ -8,6 +8,7 @@ from tkinter import ttk
 sys.path.insert(0, "C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\modules")
 
 import CalPPT
+import CalPPT2
 import SaveExel
 
 # Сохранение данных в БД - exel
@@ -23,6 +24,7 @@ def Save_tab1_DB(content, root):
     SaveExel.Save_tab1('K3', float(G0_count.get()))
     SaveExel.Save_tab1('H3', float(d_rs_count.get()))
     CalPPT.start(content, root)
+    CalPPT2.start(content, root)
     print("End")
 
 # Иницилизация приложения
