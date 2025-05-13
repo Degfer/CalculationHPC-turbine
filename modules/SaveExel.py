@@ -1,7 +1,11 @@
 import openpyxl
+import os
+
+relative_path_DB = "DB/"
+absolute_path_DB = os.path.abspath(relative_path_DB)
 
 def Save_tab1(cell, data):
-    book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    book = openpyxl.open(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
 
     # row = 2
@@ -10,6 +14,5 @@ def Save_tab1(cell, data):
     #     row+=1
     sheet[cell] = data
 
-
-    book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    book.save(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
     book.close()

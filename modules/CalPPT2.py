@@ -1,6 +1,8 @@
 # module CalPPT2
 import math
 import random
+import os
+
 import openpyxl
 # import pandas as pd
 from pycel import ExcelCompiler
@@ -9,6 +11,9 @@ from iapws import IAPWS97
 
 from tkinter import *
 from tkinter import ttk
+
+relative_path_DB = "DB/"
+absolute_path_DB = os.path.abspath(relative_path_DB)
 
 # Finding pairs of steam meters at point 1t - (Индекс 1t)
 def FinPairSM_i1t(h1t, s1t):
@@ -63,28 +68,51 @@ def CS_VL_AT_N2(h_k, s_k, H0z1, H0z2, H0z3, H0z4, H0z5):
 
     return Hz1_v1t, Hz2_v1t, Hz3_v1t, Hz4_v1t, Hz5_v1t
 
-# Selection of the value of the root diameter of the last stage
-def SL_VRD_LS_Random(dz1, excel):
-    while True:
-        dz = random.uniform(dz1, 2)
+# Selection of the value of the root diameter of the last stage # NOT WORK
+def SL_VRD_LS_Random(dz1):
+    discrepancy_dz2 = 100000
+    def data_dz(m):
+        dz = random.uniform(dz1, m)
 
-        book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+        book = openpyxl.open(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
         sheet = book.active
         
         sheet['T131'] = dz
 
         # Save exel file (DB)
-        book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+        book.save(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
         book.close()
+        return dz
 
+    def data_discrepancy_dz():
+        excel = ExcelCompiler(filename=absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
         discrepancy_dz = excel.evaluate('Лист1!T142')
+        return discrepancy_dz
 
-        if (discrepancy_dz < 0.01) and (discrepancy_dz > 0):
+    while True:
+        m = 2
+
+        dz = data_dz(m)
+        discrepancy_dz = data_discrepancy_dz()
+
+        if (discrepancy_dz2 > discrepancy_dz):
+            discrepancy_dz2 = discrepancy_dz
+
+        if (discrepancy_dz2 > discrepancy_dz):
+            m = dz
+        else: m = 1
+
+        print(dz, discrepancy_dz, m)
+
+        if (discrepancy_dz < 4) and (discrepancy_dz > 0):
+            print(dz, discrepancy_dz)
             break
-    return dz, discrepancy_dz 
+        
+
+    return dz, discrepancy_dz
 
 def start(content, root):
-    book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    book = openpyxl.open(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
 
     # Configuration parameters
@@ -98,7 +126,7 @@ def start(content, root):
     H0_rs = sheet['E38'].value
     
     # Load file
-    excel = ExcelCompiler(filename="C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    excel = ExcelCompiler(filename=absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
 
     # Load data for FinPairSM_i1t
     h1t = excel.evaluate('Лист1!L17')
@@ -155,7 +183,7 @@ def start(content, root):
     sheet['R124'] = z10_v1t
 
     # Save exel file (DB)
-    book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    book.save(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
     book.close()
 
     # To display the data in the point 3.4
@@ -175,7 +203,7 @@ def start(content, root):
     c2 = excel.evaluate('Лист1!F137')
     print('4.1 Выходная площадь рабочей решетки', 'F2=', F2, 'c2=', c2)
 
-    book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    book = openpyxl.open(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
 
     # Load data for SL_VLS_Random
@@ -208,16 +236,16 @@ def start(content, root):
     sheet['T139'] = Hz5_v1t
 
     # Save exel file (DB)
-    book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    book.save(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
     book.close()
 
     # Load data for SL_VRD_LS_Random
     dz1 = excel.evaluate('Лист1!P131')
 
-    # # SL_VRD_LS_Random - Selection of the value of the root diameter of the last stage
-    # dz, discrepancy_dz = SL_VRD_LS_Random(dz1, excel)
+    # SL_VRD_LS_Random - Selection of the value of the root diameter of the last stage
+    #dz, discrepancy_dz = SL_VRD_LS_Random(dz1)
 
-    # print('Подбор корневого диаметра последней ступени', 'dz=', dz, 'невязка=', discrepancy_dz)
+    #print('Подбор корневого диаметра последней ступени', 'dz=', dz, 'невязка=', discrepancy_dz)
 
 if __name__ == "__main__":
     print("This is the module - Сalculation of process parameters in a turbine 2")

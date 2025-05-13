@@ -1,10 +1,15 @@
 # module CalPPT
 import math
+import os
+
 import openpyxl
 from iapws import IAPWS97
 
 from tkinter import *
 from tkinter import ttk
+
+relative_path_DB = "DB/"
+absolute_path_DB = os.path.abspath(relative_path_DB)
 
 # Determining the initial parameters - (Индекс 0 и Индекс kt'')
 def DIP(p0, t0, pk):
@@ -137,7 +142,7 @@ def Rec_NomFR(h_indk_diff, η0iCVD, ηm, ηg, N, data_N):
     return G0_RetCal
 
 def start(content, root):
-    book = openpyxl.open("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    book = openpyxl.open(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
     sheet = book.active
 
     # Configuration parameters
@@ -373,7 +378,7 @@ def start(content, root):
     sheet['C91'] = G0_RetCal
 
     # Save exel file (DB)
-    book.save("C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\DB\\raschet_turboagregata_predvaritelny.xlsx")
+    book.save(absolute_path_DB + "/raschet_turboagregata_predvaritelny.xlsx")
     book.close()
 
 if __name__ == "__main__":

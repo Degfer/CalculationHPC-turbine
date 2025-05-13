@@ -1,11 +1,15 @@
 import sys
+import os
 
 from tkinter import *
 from tkinter import ttk
 #import tkinter as tk
 # from tkinter.scrolledtext import ScrolledText
 
-sys.path.insert(0, "C:\\Users\\Дэн\\Desktop\\Дипломная работа\\CalculationHPC-turbine\\modules")
+relative_path_modules = "modules/"
+absolute_path_modules = os.path.abspath(relative_path_modules)
+
+sys.path.insert(0, absolute_path_modules)
 
 import CalPPT
 import CalPPT2
