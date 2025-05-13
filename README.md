@@ -44,4 +44,3 @@ _If calculation H0_rs ( H0_rs==0 and d_rs != 0)_ <br> - HTofRS -> Heat transfer 
 - +data_N for checking whether the capacity is initially set for recalculation
 
 ## SaveExel - Saving data to main.py in exel (DB)
-
